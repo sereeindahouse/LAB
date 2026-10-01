@@ -35,7 +35,6 @@ HIGHLIGHT_COLOR = (100, 220, 120)
 
 MOVE_ORDER = (3, 2, 4, 1, 5, 0, 6)
 
-# Every four-cell winning window, indexed once at startup.
 wSlots = tuple(
     tuple((row + step * dr) * COLS + col + step * dc for step in range(4))
     for row in range(ROWS)
@@ -50,13 +49,6 @@ SLOTS_BY_CELL = tuple(
 
 
 class Connect4Board:
-    """Report-style engine: X = +1, 0 = -1; row zero is at the top.
-
-    Search returns -1/0/+1 only. Heuristics break ties at the root,
-    not at search leaves. The bounded-score early exit in addPly is
-    the report's pruning rule, rather than general alpha/beta bounds.
-    """
-
     def __init__(self, board=None):
         self.board = EMPTY * (ROWS * COLS) if board is None else board
         if (not isinstance(self.board, str) or len(self.board) != 42
@@ -116,7 +108,6 @@ class Connect4Board:
             else:
                 result = 0 if winner == "" else (1 if winner == "X" else -1)
             results.append(result)
-            # Scores are bounded by [-1, 1]: this is already the best result.
             if result == player:
                 return result
         return (max(results) if player == 1 else min(results)) if results else 0
@@ -125,7 +116,7 @@ class Connect4Board:
         self.mark(player)
         if depth < 1:
             raise ValueError("Depth must be at least one ply")
-        scores = [None] * COLS  # Full columns have no score.
+        scores = [None] * COLS
         for col in self.legitMoves():
             child = Connect4Board(self.board)
             winner = child.makeMove(player, col)
@@ -141,7 +132,7 @@ class Connect4Board:
         for line in wSlots:
             line_marks = [self.board[cell] for cell in line]
             if otherMark in line_marks:
-                continue  # Skip this window, not all remaining windows.
+                continue
             count = line_marks.count(mark)
             if count == 2:
                 score += setScoreFor2
@@ -150,7 +141,6 @@ class Connect4Board:
         return score
 
     def getScores(self, player):
-        # Potential score if this player drops a piece into each column.
         scores = [None] * COLS
         for col in self.legitMoves():
             child = Connect4Board(self.board)
@@ -186,7 +176,6 @@ class Connect4Board:
             return self._decision(-1, "Нүүдэл байхгүй", verbose=verbose)
         best = max(player * minimax[col] for col in moves)
         candidates = [col for col in moves if player * minimax[col] == best]
-        # The report does not specify weights: use equal attack/defence weights.
         weights = [None if col not in moves else pScores[col] + nScores[col]
                    for col in range(COLS)]
         reason = "Minimax"
