@@ -77,7 +77,6 @@ def mark_square(row, col, player):
 def available_square(row, col):
     return board[row][col] == 0
 
-# Function to check if the board is full
 def is_board_full(check_board=board):
     for row in range(BOARD_ROWS):
         for col in range(BOARD_COLUMNS):
@@ -117,7 +116,7 @@ def minimax(minimax_board, depth, is_maximizing):
             for col in range(BOARD_COLUMNS):
                 if minimax_board[row][col] == 0:
                     minimax_board[row][col] = 2
-                    score = minimax(minimax_board, depth + 1, False)
+                    score = minimax(minima1x_board, depth + 1, False)
                     minimax_board[row][col] = 0
                     best_score = max(score, best_score)
         return best_score
